@@ -231,7 +231,7 @@
     </section>
 
     <!-- Audio Element for Ocean Ambience (Hidden) -->
-    <audio id="ocean-audio" controls loop preload="auto">
+    <audio id="ocean-audio" autoplay loop preload="auto">
         <source src="SOUND KOKURIKULER 2026 SMP.mp3" type="audio/mpeg">
     </audio>
 
@@ -1074,6 +1074,23 @@
                 closeLightbox();
             }
         });
+  window.addEventListener('DOMContentLoaded', () => {
+    const audio = document.getElementById('ocean-audio');
+    if (audio) {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          const unlockAudio = () => {
+            audio.play();
+            document.removeEventListener('click', unlockAudio);
+            document.removeEventListener('scroll', unlockAudio);
+          };
+          document.addEventListener('click', unlockAudio);
+          document.addEventListener('scroll', unlockAudio);
+        });
+      }
+    }
+  });
     </script>
 </body>
 </html>
