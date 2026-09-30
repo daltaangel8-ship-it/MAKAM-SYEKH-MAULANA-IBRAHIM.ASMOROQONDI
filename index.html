@@ -783,10 +783,11 @@
         </div>
       </div>
 
-      <!-- Right Column: Video Container (Portrait Vertical 9:16) -->
+      <!-- Right Column: Video Container (Portrait 9:16 - Manual Play) -->
       <div class="lg:col-span-7 flex justify-center">
         <div class="relative w-full max-w-[320px] aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border-4 border-toasted-caramel bg-black">
-          <video class="w-full h-full object-cover" loop controls playsinline preload="metadata">
+          <!-- Video tanpa autoplay (harus dipencet untuk memutar) -->
+          <video id="recommendationVideo" class="w-full h-full object-cover" loop controls playsinline preload="metadata">
             <source src="Video Promosi Asmoroqondi.mp4.mp4" type="video/mp4">
             Browser Anda tidak mendukung pemutaran video ini.
           </video>
@@ -797,6 +798,42 @@
   </div>
 </section>
 
+<!-- Backsound Audio Element -->
+<audio id="siteBacksound" loop preload="auto">
+  <!-- Ganti 'backsound.mp3' dengan nama file lagu/audio backsound kamu jika ada -->
+  <source src="Video Promosi Asmoroqondi.mp4.mp4" type="audio/mp4">
+</audio>
+
+<script>
+  (function() {
+    const audio = document.getElementById('siteBacksound');
+    const video = document.getElementById('recommendationVideo');
+
+    if (!audio || !video) return;
+
+    // Upaya memutar backsound otomatis saat pengguna berinteraksi pertama kali dengan halaman
+    const startAudio = () => {
+      audio.play().catch(() => {});
+      document.removeEventListener('click', startAudio);
+      document.removeEventListener('touchstart', startAudio);
+      document.removeEventListener('keydown', startAudio);
+    };
+
+    document.addEventListener('click', startAudio);
+    document.addEventListener('touchstart', startAudio);
+    document.addEventListener('keydown', startAudio);
+
+    // Jika video diputar oleh pengguna, kecilkan/hentikan backsound agar suara video terdengar jelas
+    video.addEventListener('play', () => {
+      audio.pause();
+    });
+
+    // Jika video di-pause, jalankan kembali backsound
+    video.addEventListener('pause', () => {
+      audio.play().catch(() => {});
+    });
+  })();
+</script>
     <!-- GALLERY (Grid Magazine Style) -->
     <section id="galeri" class="py-16 sm:py-24 bg-golden-batter">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
