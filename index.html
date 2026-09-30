@@ -1090,94 +1090,76 @@
         </div>
     </footer>
 
-  <!-- JavaScript Logic -->
+<!-- JavaScript Logic -->
 <script>
   (function() {
+    // 1. Ambil Elemen
     const bgAudio = document.getElementById('ocean-audio');
     const myVideo = document.getElementById('myVideo');
     const btnAudio = document.getElementById('audio-toggle-btn');
     const audioIcon = document.getElementById('audio-icon');
     const audioStatus = document.getElementById('audio-status');
 
-    let isAudioPlaying = false;
-    let autoplayDone = false;
+    if (!bgAudio || !btnAudio) return;
 
-    // Fungsi Menghentikan Musik
+    let isManualMuted = false;
+
+    // Fungsi Matikan Musik
     function stopBacksound() {
-      if (bgAudio) {
-        bgAudio.pause();
-      }
-      isAudioPlaying = false;
-      if (audioIcon) {
-        audioIcon.className = 'fa-solid fa-volume-xmark';
-      }
-      if (audioStatus) {
-        audioStatus.textContent = 'Putar Lagu Backsound';
-      }
+      bgAudio.pause();
+      if (audioIcon) audioIcon.className = 'fa-solid fa-volume-xmark';
+      if (audioStatus) audioStatus.textContent = 'Putar Lagu Backsound';
     }
 
-    // Fungsi Memutar Musik
+    // Fungsi Putar Musik
     function playBacksound() {
+      if (isManualMuted) return; // Jika user pernah klik matikan, jangan paksa putar otomatis
+      
       if (myVideo && !myVideo.paused) {
         myVideo.pause();
       }
-      if (bgAudio) {
-        bgAudio.volume = 1;
-        const promise = bgAudio.play();
-        if (promise !== undefined) {
-          promise.then(() => {
-            isAudioPlaying = true;
-            if (audioIcon) {
-              audioIcon.className = 'fa-solid fa-volume-high';
-            }
-            if (audioStatus) {
-              audioStatus.textContent = 'Hentikan Lagu Backsound';
-            }
-          }).catch(() => {
-            stopBacksound();
-          });
-        }
+      
+      bgAudio.play().then(() => {
+        if (audioIcon) audioIcon.className = 'fa-solid fa-volume-high';
+        if (audioStatus) audioStatus.textContent = 'Hentikan Lagu Backsound';
+      }).catch(() => {
+        stopBacksound();
+      });
+    }
+
+    // TOGGLE TOMBOL PENCET (VERSI LANGSUNG & PASTI)
+    btnAudio.onclick = function(e) {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
       }
-    }
 
-    // TOGGLE TOMBOL PENCET (SANGAT KETAT)
-    if (btnAudio) {
-      btnAudio.onclick = function(e) {
-        if (e) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        
-        // Tandai bahwa interaksi manual sudah dilakukan
-        autoplayDone = true;
-
-        // Cek kondisi status audio saat ini
-        if (bgAudio && !bgAudio.paused) {
-          stopBacksound();
-        } else {
-          playBacksound();
-        }
-        return false;
-      };
-    }
+      if (!bgAudio.paused) {
+        // Jika sedang berbunyi -> Matikan
+        isManualMuted = true;
+        stopBacksound();
+      } else {
+        // Jika sedang mati -> Nyalakan
+        isManualMuted = false;
+        playBacksound();
+      }
+      return false;
+    };
 
     // Autoplay Saat Halaman Buka
     window.addEventListener('load', () => {
       playBacksound();
     });
 
-    // Fallback Autoplay jika diblokir browser (Hanya berlaku untuk klik DI LUAR tombol backsound)
-    function onFirstUserInteraction(e) {
-      if (autoplayDone) return;
-      if (btnAudio && btnAudio.contains(e.target)) return;
-
-      autoplayDone = true;
-      if (bgAudio && bgAudio.paused) {
+    // Fallback Klik Pertama di Luar Tombol (Aturan Browser)
+    function handleFirstInteraction(e) {
+      if (btnAudio.contains(e.target)) return;
+      if (!isManualMuted && bgAudio.paused) {
         playBacksound();
       }
-      document.removeEventListener('click', onFirstUserInteraction);
+      document.removeEventListener('click', handleFirstInteraction);
     }
-    document.addEventListener('click', onFirstUserInteraction);
+    document.addEventListener('click', handleFirstInteraction);
 
     // Integrasi dengan Video Dokumentasi
     if (myVideo) {
@@ -1186,7 +1168,9 @@
       });
 
       myVideo.addEventListener('ended', () => {
-        playBacksound();
+        if (!isManualMuted) {
+          playBacksound();
+        }
       });
     }
   })();
