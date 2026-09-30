@@ -1056,100 +1056,74 @@
         </div>
     </footer>
 
-    <!-- JavaScript Logic -->
-    <script>
-        // Mobile Menu Toggle
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileMenu = document.getElementById('mobile-menu');
-        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+  <!-- JavaScript Logic -->
+  <script>
+    // Mobile Menu Toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
 
-        mobileMenuBtn.addEventListener('click', () => {
-            mobileMenu.classList.toggle('hidden');
+    if (mobileMenuBtn && mobileMenu) {
+      mobileMenuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+      });
+    }
+
+    if (mobileNavLinks && mobileMenu) {
+      mobileNavLinks.forEach(link => {
+        link.addEventListener('click', () => {
+          mobileMenu.classList.add('hidden');
         });
+      });
+    }
 
-        mobileNavLinks.forEach(link => {
-            link.addEventListener('click', () => {
-                mobileMenu.classList.add('hidden');
-            });
-        });
+    // Audio & Video Controller (Otomatis menyalakan backsound saat video selesai)
+    (function() {
+      const bgAudio = document.getElementById('ocean-audio');
+      const myVideo = document.getElementById('myVideo');
+      const btnAudio = document.getElementById('btnAudio') || document.querySelector('button:has(.fa-volume-xmark), button:has(.fa-volume-high)') || Array.from(document.querySelectorAll('button')).find(el => el && el.textContent && el.textContent.includes('Backsound'));
 
-        // Ambient Audio Player Mechanics
-        const audioBtn = document.getElementById('audio-toggle-btn');
-        const oceanAudio = document.getElementById('ocean-audio');
-        const audioIcon = document.getElementById('audio-icon');
-        const audioStatus = document.getElementById('audio-status');
-        let isPlaying = false;
-
-        audioBtn.addEventListener('click', () => {
-            if (!isPlaying) {
-                oceanAudio.play().then(() => {
-                    isPlaying = true;
-                    audioIcon.className = "fa-solid fa-volume-high text-amber-300 animate-pulse";
-                    audioStatus.textContent = "Hentikan Backsound";
-                    audioBtn.classList.add("bg-spiced-wine");
-                }).catch(err => {
-                    console.log("Audio play error:", err);
-                });
-            } else {
-                oceanAudio.pause();
-                isPlaying = false;
-                audioIcon.className = "fa-solid fa-volume-xmark text-amber-300";
-                audioStatus.textContent = "Putar Backsound";
-                audioBtn.classList.remove("bg-spiced-wine");
-            }
-        });
-
-        // Lightbox Modal Mechanics
-        const lightboxModal = document.getElementById('lightbox-modal');
-        const lightboxImg = document.getElementById('lightbox-img');
-        const lightboxCaption = document.getElementById('lightbox-caption');
-        const lightboxSource = document.getElementById('lightbox-source');
-
-        function openLightbox(imgUrl, captionText, sourceText) {
-            lightboxImg.src = imgUrl;
-            lightboxCaption.textContent = captionText;
-            lightboxSource.textContent = sourceText;
-            lightboxModal.classList.remove('hidden');
-            lightboxModal.classList.add('flex');
-            document.body.style.overflow = 'hidden';
+      function stopBacksound() {
+        if (bgAudio) {
+          bgAudio.pause();
         }
-
-        function closeLightbox() {
-            lightboxModal.classList.add('hidden');
-            lightboxModal.classList.remove('flex');
-            document.body.style.overflow = 'auto';
+        if (btnAudio) {
+          btnAudio.innerHTML = '<i class="fa-solid fa-volume-xmark"></i> <span>Putar Backsound</span>';
         }
+      }
 
-        // Close Lightbox on Click Outside
-        lightboxModal.addEventListener('click', (e) => {
-            if (e.target === lightboxModal) {
-                closeLightbox();
+      function playBacksound() {
+        if (myVideo && !myVideo.paused) {
+          myVideo.pause();
+        }
+        if (bgAudio) {
+          bgAudio.volume = 1;
+          bgAudio.play().then(() => {
+            if (btnAudio) {
+              btnAudio.innerHTML = '<i class="fa-solid fa-volume-high"></i> <span>Hentikan Backsound</span>';
             }
-        });
+          }).catch(() => {});
+        }
+      }
 
-        // Close Lightbox on ESC key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                closeLightbox();
-            }
-        });
-  window.addEventListener('DOMContentLoaded', () => {
-    const audio = document.getElementById('ocean-audio');
-    if (audio) {
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(() => {
-          const unlockAudio = () => {
-            audio.play();
-            document.removeEventListener('click', unlockAudio);
-            document.removeEventListener('scroll', unlockAudio);
-          };
-          document.addEventListener('click', unlockAudio);
-          document.addEventListener('scroll', unlockAudio);
+      if (btnAudio) {
+        btnAudio.addEventListener('click', function(e) {
+          e.stopPropagation();
+          if (bgAudio.paused) {
+            playBacksound();
+          } else {
+            stopBacksound();
+          }
         });
       }
-    }
-  });
-    </script>
+
+      if (myVideo) {
+        myVideo.addEventListener('play', stopBacksound);
+        
+        // Ketika video habis/selesai diputar -> Backsound otomatis menyala kembali!
+        myVideo.addEventListener('ended', playBacksound);
+      }
+    })();
+  </script>
 </body>
 </html>
