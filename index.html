@@ -203,8 +203,8 @@
                     Jelajahi Warisan Sejarah <i class="fa-solid fa-arrow-down ml-2"></i>
                 </a>
                 <button id="audio-toggle-btn" class="w-full sm:w-auto bg-olive-harvest/30 hover:bg-olive-harvest/50 text-golden-batter border border-olive-harvest font-subheading text-lg px-6 py-3.5 rounded-lg transition-all flex items-center justify-center gap-2">
-                    <i id="audio-icon" class="fa-solid fa-volume-xmark text-amber-300"></i> 
-                    <span id="audio-status">Putar Lagu Backsound</span>
+                    <i id="audio-icon" class="fa-solid fa-volume-high text-amber-100"></i> 
+                    <span id="audio-status">Hentikan Backsound</span>
                 </button>
             </div>
 
@@ -1092,72 +1092,83 @@
 
   <!-- JavaScript Logic -->
   <script>
-    // Mobile Menu Toggle
-    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-    const mobileMenu = document.getElementById('mobile-menu');
-    const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+  (function() {
+    const bgAudio = document.getElementById('ocean-audio');
+    const myVideo = document.getElementById('myVideo');
+    const btnAudio = document.getElementById('audio-toggle-btn');
+    const audioIcon = document.getElementById('audio-icon');
+    const audioStatus = document.getElementById('audio-status');
 
-    if (mobileMenuBtn && mobileMenu) {
-      mobileMenuBtn.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-      });
+    function stopBacksound() {
+      if (bgAudio) {
+        bgAudio.pause();
+      }
+      if (audioIcon) {
+        audioIcon.className = 'fa-solid fa-volume-xmark text-amber-100';
+      }
+      if (audioStatus) {
+        audioStatus.textContent = 'Putar Lagu Backsound';
+      }
     }
 
-    if (mobileNavLinks && mobileMenu) {
-      mobileNavLinks.forEach(link => {
-        link.addEventListener('click', () => {
-          mobileMenu.classList.add('hidden');
-        });
-      });
-    }
-
-    // Audio & Video Controller (Otomatis menyalakan backsound saat video selesai)
-    (function() {
-      const bgAudio = document.getElementById('ocean-audio');
-      const myVideo = document.getElementById('myVideo');
-      const btnAudio = document.getElementById('btnAudio') || document.querySelector('button:has(.fa-volume-xmark), button:has(.fa-volume-high)') || Array.from(document.querySelectorAll('button')).find(el => el && el.textContent && el.textContent.includes('Backsound'));
-
-      function stopBacksound() {
-        if (bgAudio) {
-          bgAudio.pause();
-        }
-        if (btnAudio) {
-          btnAudio.innerHTML = '<i class="fa-solid fa-volume-xmark"></i> <span>Putar Backsound</span>';
-        }
+    function playBacksound() {
+      if (myVideo && !myVideo.paused) {
+        myVideo.pause();
       }
-
-      function playBacksound() {
-        if (myVideo && !myVideo.paused) {
-          myVideo.pause();
-        }
-        if (bgAudio) {
-          bgAudio.volume = 1;
-          bgAudio.play().then(() => {
-            if (btnAudio) {
-              btnAudio.innerHTML = '<i class="fa-solid fa-volume-high"></i> <span>Hentikan Backsound</span>';
-            }
-          }).catch(() => {});
-        }
-      }
-
-      if (btnAudio) {
-        btnAudio.addEventListener('click', function(e) {
-          e.stopPropagation();
-          if (bgAudio.paused) {
-            playBacksound();
-          } else {
-            stopBacksound();
+      if (bgAudio) {
+        bgAudio.volume = 1;
+        bgAudio.play().then(() => {
+          if (audioIcon) {
+            audioIcon.className = 'fa-solid fa-volume-high text-amber-100';
           }
+          if (audioStatus) {
+            audioStatus.textContent = 'Hentikan Lagu Backsound';
+          }
+        }).catch(() => {
+          stopBacksound();
         });
       }
+    }
 
-      if (myVideo) {
-        myVideo.addEventListener('play', stopBacksound);
-        
-        // Ketika video habis/selesai diputar -> Backsound otomatis menyala kembali!
-        myVideo.addEventListener('ended', playBacksound);
+    // Otomatis putar backsound saat halaman dibuka
+    window.addEventListener('DOMContentLoaded', () => {
+      if (bgAudio) {
+        bgAudio.play().then(() => {
+          if (audioIcon) {
+            audioIcon.className = 'fa-solid fa-volume-high text-amber-100';
+          }
+          if (audioStatus) {
+            audioStatus.textContent = 'Hentikan Lagu Backsound';
+          }
+        }).catch(() => {
+          // Jika diblokir otomatis oleh browser, klik di mana saja akan mengaktifkannya
+          const startAudioOnInteraction = () => {
+            playBacksound();
+            document.removeEventListener('click', startAudioOnInteraction);
+          };
+          document.addEventListener('click', startAudioOnInteraction);
+        });
       }
-    })();
-  </script>
+    });
+
+    // Klik tombol untuk nyalakan / matikan
+    if (btnAudio) {
+      btnAudio.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (bgAudio.paused) {
+          playBacksound();
+        } else {
+          stopBacksound();
+        }
+      });
+    }
+
+    // Integrasi dengan Video
+    if (myVideo) {
+      myVideo.addEventListener('play', stopBacksound);
+      myVideo.addEventListener('ended', playBacksound);
+    }
+  })();
+</script>
 </body>
 </html>
