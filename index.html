@@ -230,7 +230,7 @@
         </div>
     </section>
     <!-- Audio Element for Ocean Ambience (Hidden) -->
-    <audio id="ocean-audio" autoplay loop preload="auto">
+    <audio id="ocean-audio" loop preload="auto">
         <source src="SOUND KOKURIKULER 2026 SMP.mp3" type="audio/mpeg">
     </audio>
 
@@ -1091,7 +1091,7 @@
     </footer>
 
   <!-- JavaScript Logic -->
- <script>
+<script>
   (function() {
     const bgAudio = document.getElementById('ocean-audio');
     const myVideo = document.getElementById('myVideo');
@@ -1099,11 +1099,12 @@
     const audioIcon = document.getElementById('audio-icon');
     const audioStatus = document.getElementById('audio-status');
 
-    let userInteracted = false;
+    let isAudioPlaying = false;
 
     function stopBacksound() {
       if (bgAudio) {
         bgAudio.pause();
+        isAudioPlaying = false;
       }
       if (audioIcon) {
         audioIcon.className = 'fa-solid fa-volume-xmark text-amber-100';
@@ -1119,68 +1120,53 @@
       }
       if (bgAudio) {
         bgAudio.volume = 1;
-        bgAudio.play().then(() => {
-          if (audioIcon) {
-            audioIcon.className = 'fa-solid fa-volume-high text-amber-100';
-          }
-          if (audioStatus) {
-            audioStatus.textContent = 'Hentikan Lagu Backsound';
-          }
-        }).catch(() => {
-          stopBacksound();
-        });
+        const playPromise = bgAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            isAudioPlaying = true;
+            if (audioIcon) audioIcon.className = 'fa-solid fa-volume-high text-amber-100';
+            if (audioStatus) audioStatus.textContent = 'Hentikan Lagu Backsound';
+          }).catch(() => {
+            stopBacksound();
+          });
+        }
       }
     }
 
-    // Fungsi pemicu interaksi awal pengguna (Fallback Autoplay)
-    function handleFirstInteraction(e) {
-      // Jika yang diklik adalah tombol audio itu sendiri, jangan jalankan autoplay otomatis
-      if (btnAudio && btnAudio.contains(e.target)) return;
-
-      if (!userInteracted && bgAudio && bgAudio.paused) {
-        userInteracted = true;
-        playBacksound();
-        document.removeEventListener('click', handleFirstInteraction);
-      }
-    }
-
-    // Coba Autoplay saat halaman dimuat
-    window.addEventListener('DOMContentLoaded', () => {
-      if (bgAudio) {
-        bgAudio.play().then(() => {
-          userInteracted = true;
-          if (audioIcon) {
-            audioIcon.className = 'fa-solid fa-volume-high text-amber-100';
-          }
-          if (audioStatus) {
-            audioStatus.textContent = 'Hentikan Lagu Backsound';
-          }
-        }).catch(() => {
-          // Jika diblokir oleh browser, tunggu klik di luar tombol backsound
-          document.addEventListener('click', handleFirstInteraction);
-        });
-      }
-    });
-
-    // Event Klik Tombol Toggle Backsound
+    // Tombol Sakelar utama
     if (btnAudio) {
       btnAudio.addEventListener('click', function(e) {
         e.preventDefault();
         e.stopPropagation();
-        
-        // Tandai bahwa pengguna sudah berinteraksi secara manual
-        userInteracted = true;
-        document.removeEventListener('click', handleFirstInteraction);
 
-        if (bgAudio.paused) {
-          playBacksound();
-        } else {
-          stopBacksound();
+        if (bgAudio) {
+          if (!bgAudio.paused) {
+            stopBacksound();
+          } else {
+            playBacksound();
+          }
         }
       });
     }
 
-    // Integrasi dengan Pemutaran Video
+    // Pemutaran Otomatis Awal Saat Buka Halaman
+    window.addEventListener('load', () => {
+      if (bgAudio) {
+        playBacksound();
+      }
+    });
+
+    // Jalankan Autoplay jika terhalang aturan keamanan browser (dengan 1x interaksi pertama)
+    const handleInitialClick = (e) => {
+      if (btnAudio && btnAudio.contains(e.target)) return;
+      if (bgAudio && bgAudio.paused && !isAudioPlaying) {
+        playBacksound();
+      }
+      document.removeEventListener('click', handleInitialClick);
+    };
+    document.addEventListener('click', handleInitialClick);
+
+    // Integrasi dengan Video
     if (myVideo) {
       myVideo.addEventListener('play', stopBacksound);
       myVideo.addEventListener('ended', playBacksound);
