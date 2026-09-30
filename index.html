@@ -799,11 +799,10 @@
 
 <!-- Audio Backsound Terpisah -->
 <audio id="bgAudio" loop preload="auto">
-  <!-- Sesuaikan ekstensi (.mp3/.m4a/.wav) sesuai format file di GitHub kamu -->
   <source src="SOUND KOKURIKULER 2026 SMP.mp3" type="audio/mpeg">
 </audio>
 
-<!-- Script Kontrol Audio & Video -->
+<!-- Script Kontrol Audio & Video (Anti-Bocor) -->
 <script>
   (function() {
     const bgAudio = document.getElementById('bgAudio');
@@ -811,26 +810,44 @@
 
     if (!bgAudio || !myVideo) return;
 
-    // Putar backsound begitu ada interaksi pertama di layar
-    const playBacksound = () => {
-      if (myVideo.paused) {
+    let isVideoTouched = false;
+
+    // Fungsi memutar backsound di awal interaksi pengguna
+    function handleInitialClick() {
+      if (!isVideoTouched && myVideo.paused) {
         bgAudio.play().catch(() => {});
       }
-      document.removeEventListener('click', playBacksound);
-      document.removeEventListener('touchstart', playBacksound);
-    };
+      // Hapus listener interaksi layar agar klik selanjutnya tak bisa menyalakan backsound
+      document.removeEventListener('click', handleInitialClick);
+      document.removeEventListener('touchstart', handleInitialClick);
+    }
 
-    document.addEventListener('click', playBacksound);
-    document.addEventListener('touchstart', playBacksound);
+    document.addEventListener('click', handleInitialClick);
+    document.addEventListener('touchstart', handleInitialClick);
 
-    // Saat VIDEO DI-PLAY: Hentikan backsound, jalankan suara video
-    myVideo.addEventListener('play', () => {
+    // Paksa matikan backsound total
+    function stopBacksoundCompletely() {
       bgAudio.pause();
+      bgAudio.currentTime = 0;
+      bgAudio.volume = 0; // Set volume 0 agar tidak ada kebocoran suara sedikitpun
+    }
+
+    // Saat VIDEO DI-PLAY
+    myVideo.addEventListener('play', () => {
+      isVideoTouched = true;
+      stopBacksoundCompletely();
     });
 
-    // Saat VIDEO DI-PAUSE / SELESAI: Lanjutkan backsound kembali
+    // Saat VIDEO DI-PAUSE
     myVideo.addEventListener('pause', () => {
-      bgAudio.play().catch(() => {});
+      isVideoTouched = true;
+      stopBacksoundCompletely();
+    });
+
+    // Saat VIDEO SELESAI / ENDED
+    myVideo.addEventListener('ended', () => {
+      isVideoTouched = true;
+      stopBacksoundCompletely();
     });
   })();
 </script>
