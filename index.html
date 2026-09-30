@@ -763,60 +763,63 @@
         </div>
     </section>
 
-<!-- Script Kontrol Audio & Video (Anti-Bocor di Tombol Hentikan) -->
+<!-- Script Kontrol Audio & Video Terpadu -->
 <script>
   (function() {
-    const bgAudio = document.getElementById('bgAudio');
+    const bgAudio = document.getElementById('ocean-audio');
     const myVideo = document.getElementById('myVideo');
+    const btnAudio = document.getElementById('btnAudio') || document.querySelector('button:has(.fa-volume-xmark), button:has(.fa-volume-high)') || Array.from(document.querySelectorAll('button')).find(el => el.textContent.includes('Backsound'));
 
-    if (!bgAudio || !myVideo) return;
+    if (!bgAudio) return;
 
-    let isVideoTouched = false;
-
-    // Fungsi memutar backsound di awal interaksi pengguna sebelum video disentuh
-    function handleInitialClick() {
-      if (!isVideoTouched && myVideo.paused) {
-        bgAudio.play().catch(() => {});
-      }
-      document.removeEventListener('click', handleInitialClick);
-      document.removeEventListener('touchstart', handleInitialClick);
-    }
-
-    document.addEventListener('click', handleInitialClick);
-    document.addEventListener('touchstart', handleInitialClick);
-
-    // Paksa matikan backsound total tanpa sisa
-    function stopBacksoundCompletely() {
+    // Matikan backsound & ubah teks tombol
+    function stopBacksound() {
       bgAudio.pause();
       bgAudio.currentTime = 0;
-      bgAudio.volume = 0;
-    }
-
-    // Fungsi pemantau status video secara real-time
-    function checkVideoState() {
-      if (!myVideo.paused) {
-        // Jika video sedang PLAY
-        isVideoTouched = true;
-        stopBacksoundCompletely();
-      } else if (isVideoTouched || myVideo.paused) {
-        // Jika video di-PAUSE / di-HENTIKAN
-        stopBacksoundCompletely();
+      if (btnAudio) {
+        btnAudio.innerHTML = '🔈 Putar Backsound';
       }
     }
 
-    // Event listener lengkap untuk menangkap SEMUA aksi pada kontrol video
-    ['play', 'pause', 'ended', 'seeking', 'waiting', 'timeupdate', 'volumechange'].forEach(eventType => {
-      myVideo.addEventListener(eventType, checkVideoState);
-    });
-
-    // Pengecekan interval tambahan untuk memastikan backsound benar-benar mati saat video pause
-    setInterval(() => {
-      if (isVideoTouched || !myVideo.paused) {
-        if (!bgAudio.paused) {
-          stopBacksoundCompletely();
+    // Putar backsound & ubah teks tombol
+    function playBacksound() {
+      if (myVideo && !myVideo.paused) {
+        myVideo.pause();
+      }
+      bgAudio.volume = 1;
+      bgAudio.play().then(() => {
+        if (btnAudio) {
+          btnAudio.innerHTML = '🔊 Hentikan Backsound';
         }
-      }
-    }, 200);
+      }).catch(() => {});
+    }
+
+    // Event Klik Tombol Backsound
+    if (btnAudio) {
+      btnAudio.addEventListener('click', function(e) {
+        e.stopPropagation();
+        if (bgAudio.paused) {
+          playBacksound();
+        } else {
+          stopBacksound();
+        }
+      });
+    }
+
+    // Event Interaksi Video
+    if (myVideo) {
+      myVideo.addEventListener('play', () => {
+        stopBacksound();
+      });
+
+      myVideo.addEventListener('pause', () => {
+        stopBacksound();
+      });
+
+      myVideo.addEventListener('ended', () => {
+        stopBacksound();
+      });
+    }
   })();
 </script>
     <!-- GALLERY (Grid Magazine Style) -->
