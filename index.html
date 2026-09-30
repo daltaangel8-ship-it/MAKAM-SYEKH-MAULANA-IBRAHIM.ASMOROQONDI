@@ -1091,13 +1091,15 @@
     </footer>
 
   <!-- JavaScript Logic -->
-  <script>
+ <script>
   (function() {
     const bgAudio = document.getElementById('ocean-audio');
     const myVideo = document.getElementById('myVideo');
     const btnAudio = document.getElementById('audio-toggle-btn');
     const audioIcon = document.getElementById('audio-icon');
     const audioStatus = document.getElementById('audio-status');
+
+    let userInteracted = false;
 
     function stopBacksound() {
       if (bgAudio) {
@@ -1130,10 +1132,23 @@
       }
     }
 
-    // Otomatis putar backsound saat halaman dibuka
+    // Fungsi pemicu interaksi awal pengguna (Fallback Autoplay)
+    function handleFirstInteraction(e) {
+      // Jika yang diklik adalah tombol audio itu sendiri, jangan jalankan autoplay otomatis
+      if (btnAudio && btnAudio.contains(e.target)) return;
+
+      if (!userInteracted && bgAudio && bgAudio.paused) {
+        userInteracted = true;
+        playBacksound();
+        document.removeEventListener('click', handleFirstInteraction);
+      }
+    }
+
+    // Coba Autoplay saat halaman dimuat
     window.addEventListener('DOMContentLoaded', () => {
       if (bgAudio) {
         bgAudio.play().then(() => {
+          userInteracted = true;
           if (audioIcon) {
             audioIcon.className = 'fa-solid fa-volume-high text-amber-100';
           }
@@ -1141,20 +1156,22 @@
             audioStatus.textContent = 'Hentikan Lagu Backsound';
           }
         }).catch(() => {
-          // Jika diblokir otomatis oleh browser, klik di mana saja akan mengaktifkannya
-          const startAudioOnInteraction = () => {
-            playBacksound();
-            document.removeEventListener('click', startAudioOnInteraction);
-          };
-          document.addEventListener('click', startAudioOnInteraction);
+          // Jika diblokir oleh browser, tunggu klik di luar tombol backsound
+          document.addEventListener('click', handleFirstInteraction);
         });
       }
     });
 
-    // Klik tombol untuk nyalakan / matikan
+    // Event Klik Tombol Toggle Backsound
     if (btnAudio) {
       btnAudio.addEventListener('click', function(e) {
+        e.preventDefault();
         e.stopPropagation();
+        
+        // Tandai bahwa pengguna sudah berinteraksi secara manual
+        userInteracted = true;
+        document.removeEventListener('click', handleFirstInteraction);
+
         if (bgAudio.paused) {
           playBacksound();
         } else {
@@ -1163,7 +1180,7 @@
       });
     }
 
-    // Integrasi dengan Video
+    // Integrasi dengan Pemutaran Video
     if (myVideo) {
       myVideo.addEventListener('play', stopBacksound);
       myVideo.addEventListener('ended', playBacksound);
