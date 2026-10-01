@@ -1059,51 +1059,60 @@
     </footer>
     
 <!-- MODAL POPUP LIGHTBOX GALERI -->
-<div id="lightbox" class="fixed inset-0 z-50 hidden bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
-  <div class="relative max-w-4xl w-full flex flex-col items-center">
-    <button onclick="closeLightbox()" class="absolute -top-12 right-0 text-white hover:text-amber-300 text-3xl font-bold transition focus:outline-none cursor-pointer">
+<div id="lightbox" style="display: none; position: fixed; inset: 0; z-index: 9999; background-color: rgba(0, 0, 0, 0.9); align-items: center; justify-content: center; padding: 1rem; backdrop-filter: blur(4px);">
+  <div style="position: relative; max-width: 56rem; width: 100%; display: flex; flex-direction: column; align-items: center;">
+    <button onclick="closeLightbox()" style="position: absolute; top: -3rem; right: 0; color: white; font-size: 1.875rem; font-weight: bold; background: none; border: none; cursor: pointer;">
       &times; Tutup
     </button>
-    <img id="lightbox-img" src="" alt="Gambar Diperbesar" class="max-h-[85vh] max-w-full rounded-lg shadow-2xl object-contain border-2 border-golden-batter/40">
-    <p id="lightbox-caption" class="text-white font-subheading text-center mt-4 text-sm sm:text-base"></p>
+    <img id="lightbox-img" src="" alt="Gambar Diperbesar" style="max-height: 85vh; max-width: 100%; border-radius: 0.5rem; object-fit: contain; border: 2px solid rgba(212, 160, 23, 0.4); shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+    <p id="lightbox-caption" style="color: white; text-align: center; margin-top: 1rem; font-size: 1rem;"></p>
   </div>
 </div>
     
 <!-- JavaScript Logic -->
 <script>
-  // --- FUNGSI LIGHTBOX GALERI (Sesuai onclick di HTML kamu) ---
+  // FUNGSI OPEN LIGHTBOX
   function openLightbox(src, title, desc) {
-    const lightbox = document.getElementById('lightbox');
-    const lightboxImg = document.getElementById('lightbox-img');
-    const lightboxCaption = document.getElementById('lightbox-caption');
+    var lightbox = document.getElementById('lightbox');
+    var lightboxImg = document.getElementById('lightbox-img');
+    var lightboxCaption = document.getElementById('lightbox-caption');
 
     if (lightbox && lightboxImg) {
       lightboxImg.src = src;
       if (lightboxCaption) {
         lightboxCaption.textContent = title + (desc ? ' - ' + desc : '');
       }
-      lightbox.classList.remove('hidden');
+      lightbox.style.display = 'flex'; // Menggunakan inline style langsung
       document.body.style.overflow = 'hidden';
     }
   }
 
+  // FUNGSI CLOSE LIGHTBOX
   function closeLightbox() {
-    const lightbox = document.getElementById('lightbox');
+    var lightbox = document.getElementById('lightbox');
     if (lightbox) {
-      lightbox.classList.add('hidden');
+      lightbox.style.display = 'none'; // Sembunyikan kembali
       document.body.style.overflow = 'auto';
     }
   }
 
-  // Tutup Lightbox jika tombol ESC dipencet
+  // TUTUP JIKA PENCET ESC
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeLightbox();
   });
 
+  // TUTUP JIKA KLIK AREA HITAM DI LUAR GAMBAR
+  window.onclick = function(e) {
+    var lightbox = document.getElementById('lightbox');
+    if (e.target === lightbox) {
+      closeLightbox();
+    }
+  };
+
+  // LOGIKA BACKSOUND & VIDEO
   (function() {
     const bgAudio = document.getElementById('ocean-audio');
     const myVideo = document.getElementById('myVideo');
-    
     const btnAudio = document.getElementById('audio-toggle-btn') || 
                      document.getElementById('btnAudio') || 
                      Array.from(document.querySelectorAll('button')).find(b => b.textContent && b.textContent.includes('Backsound'));
@@ -1112,7 +1121,6 @@
 
     const audioStatus = btnAudio.querySelector('span') || btnAudio;
     const audioIcon = btnAudio.querySelector('i');
-
     let userMuted = false;
 
     function setUI(isPlaying) {
@@ -1132,27 +1140,19 @@
 
     function playBacksound() {
       if (myVideo && !myVideo.paused) return;
-
       bgAudio.volume = 1;
       bgAudio.muted = false;
-
       const playPromise = bgAudio.play();
       if (playPromise !== undefined) {
-        playPromise.then(() => {
-          setUI(true);
-        }).catch(() => {
-          stopBacksound();
-        });
+        playPromise.then(() => setUI(true)).catch(() => stopBacksound());
       }
     }
 
-    // LOGIKA TOMBOL BACKSOUND
     btnAudio.onclick = function(e) {
       if (e) {
         e.preventDefault();
         e.stopPropagation();
       }
-
       if (!bgAudio.paused) {
         userMuted = true;
         stopBacksound();
@@ -1163,14 +1163,12 @@
       return false;
     };
 
-    // INTEGRASI DENGAN VIDEO DOKUMENTASI
     if (myVideo) {
       myVideo.addEventListener('play', () => stopBacksound());
       myVideo.addEventListener('pause', () => { if (!userMuted) playBacksound(); });
       myVideo.addEventListener('ended', () => { if (!userMuted) playBacksound(); });
     }
 
-    // AUTOPLAY AWAL
     window.addEventListener('load', () => playBacksound());
 
     function handleGlobalClick(e) {
