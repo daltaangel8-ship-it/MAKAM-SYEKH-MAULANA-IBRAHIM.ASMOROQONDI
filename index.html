@@ -873,7 +873,7 @@
                 
                 <!-- Image Item 1 -->
                 <div class="gallery-item relative rounded-xl overflow-hidden shadow-md group cursor-pointer border border-toasted-caramel/30 h-56"
-                     onclick="openLightbox('Foto makam asmoroqondi 8.jpg', 'Kompleks Makam Utama Syekh Maulana Ibrahim Asmoroqondi', 'Sumber: Unsplash Dokumentasi Wisata')">
+                     onclick="openLightbox('makam asmoroqondi 8.jpg', 'Kompleks Makam Utama Syekh Maulana Ibrahim Asmoroqondi', 'Sumber: Unsplash Dokumentasi Wisata')">
                     <img src="Foto makam asmoroqondi 8.jpg" 
                          alt="Kompleks Makam Utama" 
                          class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
@@ -1071,25 +1071,15 @@
     
 <!-- JavaScript Logic -->
 <script>
-  // FUNGSI OPEN LIGHTBOX (OTOMATIS MENCARI/MEMPERBAIKI NAMA FILE GAMBAR)
+  // FUNGSI OPEN LIGHTBOX
   function openLightbox(src, title, desc) {
     var lightbox = document.getElementById('lightbox');
     var lightboxImg = document.getElementById('lightbox-img');
     var lightboxCaption = document.getElementById('lightbox-caption');
 
     if (lightbox && lightboxImg) {
-      // Bersihkan nama file dari awalan 'Foto ' jika ada dan perbaiki karakter spasi
-      var cleanSrc = src.replace(/^Foto\s+/i, '');
-      
-      // Coba load gambar pertama
-      lightboxImg.src = encodeURI(cleanSrc);
-
-      // Jika gambar gagal dimuat, coba versi nama asli (fallback)
-      lightboxImg.onerror = function() {
-        if (lightboxImg.src !== encodeURI(src)) {
-          lightboxImg.src = encodeURI(src);
-        }
-      };
+      // encodeURI untuk mengubah spasi menjadi %20 agar dibaca browser
+      lightboxImg.src = encodeURI(src);
 
       if (lightboxCaption) {
         lightboxCaption.textContent = title + (desc ? ' - ' + desc : '');
