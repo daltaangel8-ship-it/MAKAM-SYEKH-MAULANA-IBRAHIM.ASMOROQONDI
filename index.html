@@ -1071,18 +1071,30 @@
     
 <!-- JavaScript Logic -->
 <script>
-  // FUNGSI OPEN LIGHTBOX
+  // FUNGSI OPEN LIGHTBOX (OTOMATIS MENCARI/MEMPERBAIKI NAMA FILE GAMBAR)
   function openLightbox(src, title, desc) {
     var lightbox = document.getElementById('lightbox');
     var lightboxImg = document.getElementById('lightbox-img');
     var lightboxCaption = document.getElementById('lightbox-caption');
 
     if (lightbox && lightboxImg) {
-      lightboxImg.src = src;
+      // Bersihkan nama file dari awalan 'Foto ' jika ada dan perbaiki karakter spasi
+      var cleanSrc = src.replace(/^Foto\s+/i, '');
+      
+      // Coba load gambar pertama
+      lightboxImg.src = encodeURI(cleanSrc);
+
+      // Jika gambar gagal dimuat, coba versi nama asli (fallback)
+      lightboxImg.onerror = function() {
+        if (lightboxImg.src !== encodeURI(src)) {
+          lightboxImg.src = encodeURI(src);
+        }
+      };
+
       if (lightboxCaption) {
         lightboxCaption.textContent = title + (desc ? ' - ' + desc : '');
       }
-      lightbox.style.display = 'flex'; // Menggunakan inline style langsung
+      lightbox.style.display = 'flex';
       document.body.style.overflow = 'hidden';
     }
   }
@@ -1091,17 +1103,17 @@
   function closeLightbox() {
     var lightbox = document.getElementById('lightbox');
     if (lightbox) {
-      lightbox.style.display = 'none'; // Sembunyikan kembali
+      lightbox.style.display = 'none';
       document.body.style.overflow = 'auto';
     }
   }
 
-  // TUTUP JIKA PENCET ESC
+  // TUTUP DENGAN TOMBOL ESC
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeLightbox();
   });
 
-  // TUTUP JIKA KLIK AREA HITAM DI LUAR GAMBAR
+  // TUTUP JIKA KLIK DI LUAR GAMBAR
   window.onclick = function(e) {
     var lightbox = document.getElementById('lightbox');
     if (e.target === lightbox) {
@@ -1109,7 +1121,7 @@
     }
   };
 
-  // LOGIKA BACKSOUND & VIDEO
+  // LOGIKA BACKSOUND & VIDEO DOKUMENTASI
   (function() {
     const bgAudio = document.getElementById('ocean-audio');
     const myVideo = document.getElementById('myVideo');
