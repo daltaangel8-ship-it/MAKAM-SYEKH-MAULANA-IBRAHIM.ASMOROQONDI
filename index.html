@@ -1061,7 +1061,6 @@
 <!-- JavaScript Logic -->
 <script>
   (function() {
-    // 1. Ambil Elemen
     const bgAudio = document.getElementById('ocean-audio');
     const myVideo = document.getElementById('myVideo');
     const btnAudio = document.getElementById('audio-toggle-btn');
@@ -1070,92 +1069,88 @@
 
     if (!bgAudio || !btnAudio) return;
 
-    let isAudioPlaying = false;
+    let userMuted = false;
+    let hasInteracted = false;
 
-    // Tampilan UI Tombol
-    function updateUI(playing) {
-      if (playing) {
-        if (audioIcon) audioIcon.className = 'fa-solid fa-volume-high text-amber-100';
-        if (audioStatus) audioStatus.textContent = 'Hentikan Lagu Backsound';
-      } else {
-        if (audioIcon) audioIcon.className = 'fa-solid fa-volume-xmark text-amber-100';
-        if (audioStatus) audioStatus.textContent = 'Putar Lagu Backsound';
-      }
-    }
-
-    // Fungsi Matikan Musik
+    // Fungsi Menghentikan Lagu & Mengubah UI ke "Putar Lagu Backsound"
     function stopBacksound() {
       bgAudio.pause();
-      isAudioPlaying = false;
-      updateUI(false);
+      if (audioIcon) audioIcon.className = 'fa-solid fa-volume-xmark text-amber-100';
+      if (audioStatus) audioStatus.textContent = 'Putar Lagu Backsound';
     }
 
-    // Fungsi Putar Musik
+    // Fungsi Memutar Lagu & Mengubah UI ke "Hentikan Lagu Backsound"
     function playBacksound() {
-      // Jika video sedang diputar, jangan jalankan backsound
-      if (myVideo && !myVideo.paused) {
-        return;
-      }
+      if ((myVideo && !myVideo.paused) || userMuted) return;
 
       bgAudio.volume = 1;
-      const promise = bgAudio.play();
-      if (promise !== undefined) {
-        promise.then(() => {
-          isAudioPlaying = true;
-          updateUI(true);
-        }).catch(() => {
+      
+      // Langsung ubah teks dan ikon tanpa menunggu
+      if (audioIcon) audioIcon.className = 'fa-solid fa-volume-high text-amber-100';
+      if (audioStatus) audioStatus.textContent = 'Hentikan Lagu Backsound';
+
+      const playPromise = bgAudio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Jika diblokir oleh browser saat awal load
           stopBacksound();
         });
       }
     }
 
-    // 2. LOGIKA KLIK TOMBOL BACKSOUND (SANGAT PRESISI)
+    // --- LOGIKA KLIK TOMBOL BACKSOUND ---
     btnAudio.addEventListener('click', function(e) {
       e.preventDefault();
       e.stopPropagation();
 
-      if (!bgAudio.paused) {
+      hasInteracted = true;
+
+      // Cek apakah audio sedang berbunyi ATAU teksnya sedang "Hentikan Lagu Backsound"
+      const isCurrentlyPlaying = !bgAudio.paused || (audioStatus && audioStatus.textContent.includes('Hentikan'));
+
+      if (isCurrentlyPlaying) {
+        // MATIKAN LAGU
+        userMuted = true;
         stopBacksound();
       } else {
+        // NYALAKAN LAGU (Melanjutkan dari detik terakhir)
+        userMuted = false;
         playBacksound();
       }
     });
 
-    // 3. INTEGRASI DENGAN VIDEO DOKUMENTASI
+    // --- INTEGRASI DENGAN VIDEO DOKUMENTASI ---
     if (myVideo) {
-      // Saat Video Mulai Diputar -> Hentikan Backsound
       myVideo.addEventListener('play', () => {
         stopBacksound();
       });
 
-      // Saat Video Di-PAUSE / DIHENTIKAN -> Otomatis Lanjutkan Backsound
       myVideo.addEventListener('pause', () => {
-        playBacksound();
+        if (!userMuted) playBacksound();
       });
 
-      // Saat Video SELESAI DIPUTAR -> Otomatis Lanjutkan Backsound
       myVideo.addEventListener('ended', () => {
-        playBacksound();
+        if (!userMuted) playBacksound();
       });
     }
 
-    // 4. AUTOPLAY PERTAMA KALI HALAMAN DIBUKA
+    // --- AUTOPLAY PERTAMA KALI HALAMAN DIBUKA ---
     window.addEventListener('load', () => {
       playBacksound();
     });
 
-    // Fallback Autoplay (Aman dari bentrokan dengan tombol)
-    function handleFirstGlobalClick(e) {
-      // Jika yang diklik adalah tombol backsound sendiri, lewati listener ini
+    // Fallback Klik Pertama di Luar Tombol
+    function handleGlobalClick(e) {
       if (btnAudio.contains(e.target)) return;
 
-      if (bgAudio.paused && (!myVideo || myVideo.paused)) {
+      if (!hasInteracted && !userMuted && bgAudio.paused) {
+        hasInteracted = true;
         playBacksound();
       }
-      document.removeEventListener('click', handleFirstGlobalClick);
+      document.removeEventListener('click', handleGlobalClick);
     }
-    document.addEventListener('click', handleFirstGlobalClick);
 
+    document.addEventListener('click', handleGlobalClick);
   })();
 </script>
 </body>
