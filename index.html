@@ -1070,77 +1070,92 @@
 
     if (!bgAudio || !btnAudio) return;
 
-    let isManualMuted = false;
+    let isAudioPlaying = false;
+
+    // Tampilan UI Tombol
+    function updateUI(playing) {
+      if (playing) {
+        if (audioIcon) audioIcon.className = 'fa-solid fa-volume-high text-amber-100';
+        if (audioStatus) audioStatus.textContent = 'Hentikan Lagu Backsound';
+      } else {
+        if (audioIcon) audioIcon.className = 'fa-solid fa-volume-xmark text-amber-100';
+        if (audioStatus) audioStatus.textContent = 'Putar Lagu Backsound';
+      }
+    }
 
     // Fungsi Matikan Musik
     function stopBacksound() {
       bgAudio.pause();
-      if (audioIcon) audioIcon.className = 'fa-solid fa-volume-xmark';
-      if (audioStatus) audioStatus.textContent = 'Putar Lagu Backsound';
+      isAudioPlaying = false;
+      updateUI(false);
     }
 
     // Fungsi Putar Musik
     function playBacksound() {
-      if (isManualMuted) return; // Jika user pernah klik matikan, jangan paksa putar otomatis
-      
+      // Jika video sedang diputar, jangan jalankan backsound
       if (myVideo && !myVideo.paused) {
-        myVideo.pause();
+        return;
       }
-      
-      bgAudio.play().then(() => {
-        if (audioIcon) audioIcon.className = 'fa-solid fa-volume-high';
-        if (audioStatus) audioStatus.textContent = 'Hentikan Lagu Backsound';
-      }).catch(() => {
-        stopBacksound();
-      });
+
+      bgAudio.volume = 1;
+      const promise = bgAudio.play();
+      if (promise !== undefined) {
+        promise.then(() => {
+          isAudioPlaying = true;
+          updateUI(true);
+        }).catch(() => {
+          stopBacksound();
+        });
+      }
     }
 
-    // TOGGLE TOMBOL PENCET (VERSI LANGSUNG & PASTI)
-    btnAudio.onclick = function(e) {
-      if (e) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
+    // 2. LOGIKA KLIK TOMBOL BACKSOUND (SANGAT PRESISI)
+    btnAudio.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
 
       if (!bgAudio.paused) {
-        // Jika sedang berbunyi -> Matikan
-        isManualMuted = true;
         stopBacksound();
       } else {
-        // Jika sedang mati -> Nyalakan
-        isManualMuted = false;
         playBacksound();
       }
-      return false;
-    };
-
-    // Autoplay Saat Halaman Buka
-    window.addEventListener('load', () => {
-      playBacksound();
     });
 
-    // Fallback Klik Pertama di Luar Tombol (Aturan Browser)
-    function handleFirstInteraction(e) {
-      if (btnAudio.contains(e.target)) return;
-      if (!isManualMuted && bgAudio.paused) {
-        playBacksound();
-      }
-      document.removeEventListener('click', handleFirstInteraction);
-    }
-    document.addEventListener('click', handleFirstInteraction);
-
-    // Integrasi dengan Video Dokumentasi
+    // 3. INTEGRASI DENGAN VIDEO DOKUMENTASI
     if (myVideo) {
+      // Saat Video Mulai Diputar -> Hentikan Backsound
       myVideo.addEventListener('play', () => {
         stopBacksound();
       });
 
+      // Saat Video Di-PAUSE / DIHENTIKAN -> Otomatis Lanjutkan Backsound
+      myVideo.addEventListener('pause', () => {
+        playBacksound();
+      });
+
+      // Saat Video SELESAI DIPUTAR -> Otomatis Lanjutkan Backsound
       myVideo.addEventListener('ended', () => {
-        if (!isManualMuted) {
-          playBacksound();
-        }
+        playBacksound();
       });
     }
+
+    // 4. AUTOPLAY PERTAMA KALI HALAMAN DIBUKA
+    window.addEventListener('load', () => {
+      playBacksound();
+    });
+
+    // Fallback Autoplay (Aman dari bentrokan dengan tombol)
+    function handleFirstGlobalClick(e) {
+      // Jika yang diklik adalah tombol backsound sendiri, lewati listener ini
+      if (btnAudio.contains(e.target)) return;
+
+      if (bgAudio.paused && (!myVideo || myVideo.paused)) {
+        playBacksound();
+      }
+      document.removeEventListener('click', handleFirstGlobalClick);
+    }
+    document.addEventListener('click', handleFirstGlobalClick);
+
   })();
 </script>
 </body>
