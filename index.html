@@ -1057,14 +1057,53 @@
             </div>
         </div>
     </footer>
-
+    
+<!-- MODAL POPUP LIGHTBOX GALERI -->
+<div id="lightbox" class="fixed inset-0 z-50 hidden bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm transition-all duration-300">
+  <div class="relative max-w-4xl w-full flex flex-col items-center">
+    <button onclick="closeLightbox()" class="absolute -top-12 right-0 text-white hover:text-amber-300 text-3xl font-bold transition focus:outline-none cursor-pointer">
+      &times; Tutup
+    </button>
+    <img id="lightbox-img" src="" alt="Gambar Diperbesar" class="max-h-[85vh] max-w-full rounded-lg shadow-2xl object-contain border-2 border-golden-batter/40">
+    <p id="lightbox-caption" class="text-white font-subheading text-center mt-4 text-sm sm:text-base"></p>
+  </div>
+</div>
+    
 <!-- JavaScript Logic -->
 <script>
+  // --- FUNGSI LIGHTBOX GALERI (Sesuai onclick di HTML kamu) ---
+  function openLightbox(src, title, desc) {
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+
+    if (lightbox && lightboxImg) {
+      lightboxImg.src = src;
+      if (lightboxCaption) {
+        lightboxCaption.textContent = title + (desc ? ' - ' + desc : '');
+      }
+      lightbox.classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeLightbox() {
+    const lightbox = document.getElementById('lightbox');
+    if (lightbox) {
+      lightbox.classList.add('hidden');
+      document.body.style.overflow = 'auto';
+    }
+  }
+
+  // Tutup Lightbox jika tombol ESC dipencet
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+  });
+
   (function() {
     const bgAudio = document.getElementById('ocean-audio');
     const myVideo = document.getElementById('myVideo');
     
-    // Cari tombol secara otomatis berdasarkan ID atau teksnya
     const btnAudio = document.getElementById('audio-toggle-btn') || 
                      document.getElementById('btnAudio') || 
                      Array.from(document.querySelectorAll('button')).find(b => b.textContent && b.textContent.includes('Backsound'));
@@ -1076,7 +1115,6 @@
 
     let userMuted = false;
 
-    // Update Tampilan Tombol
     function setUI(isPlaying) {
       if (isPlaying) {
         if (audioIcon) audioIcon.className = 'fa-solid fa-volume-high text-amber-100';
@@ -1087,83 +1125,61 @@
       }
     }
 
-    // Fungsi Menghentikan Lagu
     function stopBacksound() {
       bgAudio.pause();
       setUI(false);
     }
 
-    // Fungsi Memutar Lagu (Paksa Putar dan Buka Mute)
     function playBacksound() {
-      // Jika video promosi sedang berjalan, jangan putar backsound dulu
-      if (myVideo && !myVideo.paused) {
-        return;
-      }
+      if (myVideo && !myVideo.paused) return;
 
       bgAudio.volume = 1;
-      bgAudio.muted = false; // Memastikan audio tidak dalam keadaan muted internal
+      bgAudio.muted = false;
 
       const playPromise = bgAudio.play();
       if (playPromise !== undefined) {
         playPromise.then(() => {
           setUI(true);
-        }).catch((err) => {
-          console.log("Autoplay diblokir:", err);
+        }).catch(() => {
           stopBacksound();
         });
       }
     }
 
-    // --- LOGIKA UTAMA KLIK TOMBOL BACKSOUND ---
+    // LOGIKA TOMBOL BACKSOUND
     btnAudio.onclick = function(e) {
       if (e) {
         e.preventDefault();
         e.stopPropagation();
       }
 
-      // Cek apakah saat ini audio sedang diputar
       if (!bgAudio.paused) {
-        // Jika SEDANG BUNYI -> Matikan
         userMuted = true;
         stopBacksound();
       } else {
-        // Jika SEDANG MATI -> Buka blokir & Putar Kembali!
         userMuted = false;
         playBacksound();
       }
       return false;
     };
 
-    // --- INTEGRASI DENGAN VIDEO DOKUMENTASI ---
+    // INTEGRASI DENGAN VIDEO DOKUMENTASI
     if (myVideo) {
-      myVideo.addEventListener('play', () => {
-        stopBacksound();
-      });
-
-      myVideo.addEventListener('pause', () => {
-        if (!userMuted) playBacksound();
-      });
-
-      myVideo.addEventListener('ended', () => {
-        if (!userMuted) playBacksound();
-      });
+      myVideo.addEventListener('play', () => stopBacksound());
+      myVideo.addEventListener('pause', () => { if (!userMuted) playBacksound(); });
+      myVideo.addEventListener('ended', () => { if (!userMuted) playBacksound(); });
     }
 
-    // --- AUTOPLAY PERTAMA KALI HALAMAN DIBUKA ---
-    window.addEventListener('load', () => {
-      playBacksound();
-    });
+    // AUTOPLAY AWAL
+    window.addEventListener('load', () => playBacksound());
 
-    // Fallback Klik Pertama di Layar jika Autoplay Awal Diblokir Browser
     function handleGlobalClick(e) {
       if (btnAudio.contains(e.target)) return;
-
       if (!userMuted && bgAudio.paused && (!myVideo || myVideo.paused)) {
         playBacksound();
       }
       document.removeEventListener('click', handleGlobalClick);
     }
-
     document.addEventListener('click', handleGlobalClick);
   })();
 </script>
