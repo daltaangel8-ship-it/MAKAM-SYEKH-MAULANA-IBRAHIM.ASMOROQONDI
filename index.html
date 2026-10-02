@@ -985,4 +985,158 @@
         <button onclick="closeLightbox()" class="absolute top-6 right-6 text-golden-batter hover:text-amber-300 text-3xl focus:outline-none">
             <i class="fa-solid fa-xmark"></i>
         </button>
-        <div class="max-w-4xl w-full bg-cowhide-cocoa rounded-2xl ove
+        <div class="max-w-4xl w-full bg-cowhide-cocoa rounded-2xl overflow-hidden border border-toasted-caramel shadow-2xl">
+            <img id="lightbox-img" src="" alt="Enlarged gallery view" class="w-full max-h-[70vh] object-contain bg-black">
+            <div class="p-5 text-golden-batter">
+                <h4 id="lightbox-caption" class="font-subheading text-2xl font-bold text-amber-200"></h4>
+                <p id="lightbox-source" class="text-xs font-heading text-olive-harvest mt-1 uppercase"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-cowhide-cocoa text-golden-batter border-t-4 border-toasted-caramel pt-12 pb-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 mb-12">
+                
+                <!-- Brand Info -->
+                <div class="md:col-span-6 space-y-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-olive-harvest flex items-center justify-center text-cowhide-cocoa">
+                            <i class="fa-solid fa-mosque"></i>
+                        </div>
+                        <span class="font-heading text-xl text-golden-batter uppercase">Asmoroqondi Tuban</span>
+                    </div>
+                    <p class="font-script text-3xl text-amber-200">
+                        Jejak ulama, warisan untuk generasi.
+                    </p>
+                    <p class="text-xs text-golden-batter/80 leading-relaxed font-body max-w-md">
+                        Situs resmi informasi wisata religi dan sejarah Makam Syekh Maulana Ibrahim Asmoroqondi, Desa Gesikharjo, Kecamatan Palang, Kabupaten Tuban, Jawa Timur.
+                    </p>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="md:col-span-3 space-y-3">
+                    <h4 class="font-heading text-sm uppercase text-amber-300 tracking-wider">Navigasi Halaman</h4>
+                    <ul class="text-xs space-y-2 font-subheading text-base">
+                        <li><a href="#hero" class="hover:text-amber-300 transition-colors">Beranda Utama</a></li>
+                        <li><a href="#tentang" class="hover:text-amber-300 transition-colors">Tentang Syekh Ibrahim</a></li>
+                        <li><a href="#daya-tarik" class="hover:text-amber-300 transition-colors">5 Daya Tarik Utama</a></li>
+                        <li><a href="#kuliner" class="hover:text-amber-300 transition-colors">Kuliner & Souvenir UMKM</a></li>
+                        <li><a href="#informasi" class="hover:text-amber-300 transition-colors">Jam & Akses Ziarah</a></li>
+                        <li><a href="#galeri" class="hover:text-amber-300 transition-colors">Galeri Dokumentasi</a></li>
+                    </ul>
+                </div>
+
+                <!-- Social & Location -->
+                <div class="md:col-span-3 space-y-3">
+                    <h4 class="font-heading text-sm uppercase text-amber-300 tracking-wider">Lokasi & Kontak</h4>
+                    <p class="text-xs leading-relaxed text-golden-batter/80">
+                        <i class="fa-solid fa-location-dot text-amber-300 mr-1"></i> Desa Gesikharjo, Kec. Palang, Kab. Tuban, Jawa Timur 62391
+                    </p>
+                    <div class="pt-2 flex space-x-3">
+                        <a href="https://maps.google.com/?q=Makam+Syekh+Maulana+Ibrahim+Asmoroqondi+Tuban" target="_blank" aria-label="Google Maps" class="w-8 h-8 rounded bg-toasted-caramel flex items-center justify-center hover:bg-spiced-wine transition-colors">
+                            <i class="fa-solid fa-map-location-dot text-sm"></i>
+                        </a>
+                        <a href="#" aria-label="Facebook" class="w-8 h-8 rounded bg-toasted-caramel flex items-center justify-center hover:bg-spiced-wine transition-colors">
+                            <i class="fa-brands fa-facebook-f text-sm"></i>
+                        </a>
+                        <a href="#" aria-label="Instagram" class="w-8 h-8 rounded bg-toasted-caramel flex items-center justify-center hover:bg-spiced-wine transition-colors">
+                            <i class="fa-brands fa-instagram text-sm"></i>
+                        </a>
+                        <a href="#" aria-label="YouTube" class="w-8 h-8 rounded bg-toasted-caramel flex items-center justify-center hover:bg-spiced-wine transition-colors">
+                            <i class="fa-brands fa-youtube text-sm"></i>
+                        </a>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Bottom Copyright Bar -->
+            <div class="border-t border-toasted-caramel/50 pt-6 text-center text-xs text-golden-batter/60 font-subheading flex flex-col sm:flex-row items-center justify-between gap-2">
+                <p>&copy; 2026 Landing Page Wisata Makam Syekh Maulana Ibrahim Asmoroqondi. All rights reserved.</p>
+                <p>Designed with Magazine Grid Concept • Tuban, Jawa Timur</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // Mobile Menu Toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileNavLinks = document.querySelectorAll('.mobile-nav-link');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        mobileNavLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // Ambient Audio Player Mechanics
+        const audioBtn = document.getElementById('audio-toggle-btn');
+        const oceanAudio = document.getElementById('ocean-audio');
+        const audioIcon = document.getElementById('audio-icon');
+        const audioStatus = document.getElementById('audio-status');
+        let isPlaying = false;
+
+        audioBtn.addEventListener('click', () => {
+            if (!isPlaying) {
+                oceanAudio.play().then(() => {
+                    isPlaying = true;
+                    audioIcon.className = "fa-solid fa-volume-high text-amber-300 animate-pulse";
+                    audioStatus.textContent = "Hentikan Backsound";
+                    audioBtn.classList.add("bg-spiced-wine");
+                }).catch(err => {
+                    console.log("Audio play error:", err);
+                });
+            } else {
+                oceanAudio.pause();
+                isPlaying = false;
+                audioIcon.className = "fa-solid fa-volume-xmark text-amber-300";
+                audioStatus.textContent = "Putar Backsound";
+                audioBtn.classList.remove("bg-spiced-wine");
+            }
+        });
+
+        // Lightbox Modal Mechanics
+        const lightboxModal = document.getElementById('lightbox-modal');
+        const lightboxImg = document.getElementById('lightbox-img');
+        const lightboxCaption = document.getElementById('lightbox-caption');
+        const lightboxSource = document.getElementById('lightbox-source');
+
+        function openLightbox(imgUrl, captionText, sourceText) {
+            lightboxImg.src = imgUrl;
+            lightboxCaption.textContent = captionText;
+            lightboxSource.textContent = sourceText;
+            lightboxModal.classList.remove('hidden');
+            lightboxModal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            lightboxModal.classList.add('hidden');
+            lightboxModal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        // Close Lightbox on Click Outside
+        lightboxModal.addEventListener('click', (e) => {
+            if (e.target === lightboxModal) {
+                closeLightbox();
+            }
+        });
+
+        // Close Lightbox on ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeLightbox();
+            }
+        });
+    </script>
+</body>
+</html>
